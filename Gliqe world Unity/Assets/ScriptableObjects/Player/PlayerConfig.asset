@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dd1141601c0b5d459ff471a587dbbf1, type: 3}
+  m_Name: PlayerConfig
+  m_EditorClassIdentifier: Assembly-CSharp::GliqeWorld.Player.PlayerConfig
+  walkSpeed: 4
+  sprintSpeed: 7.5
+  duckSpeed: 2
+  duckHeightMultiplier: 0.6
+  peekAngle: 15
+  peekDuration: 0.25
+  jumpHeight: 1.2
+  gravity: -20
+  mouseSensitivity: 0.15
+  defaultFOV: 75
