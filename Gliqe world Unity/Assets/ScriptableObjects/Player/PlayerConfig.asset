@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dd1141601c0b5d459ff471a587dbbf1, type: 3}
   m_Name: PlayerConfig
   m_EditorClassIdentifier: Assembly-CSharp::GliqeWorld.Player.PlayerConfig
-  walkSpeed: 4
-  sprintSpeed: 7.5
+  walkSpeed: 10
+  sprintSpeed: 13
   duckSpeed: 2
   duckHeightMultiplier: 0.6
   peekAngle: 15
   peekDuration: 0.25
   jumpHeight: 1.2
   gravity: -20
-  mouseSensitivity: 0.15
-  defaultFOV: 75
+  mouseSensitivity: 0.36
+  defaultFOV: 80
