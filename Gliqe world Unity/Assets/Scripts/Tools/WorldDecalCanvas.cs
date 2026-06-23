@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using GliqeWorld.CreativeState;
 
 namespace GliqeWorld.Tools
 {
     /// <summary>
-    /// Manages a pool of DecalProjector instances for world painting.
-    /// Controls sorting, max decal count, and acts as the placement point for tools.
-    /// NOTE: Requires URP Decal Renderer Feature enabled on the active URP Renderer asset.
+    /// Manages a pool of Quad GameObjects for world painting.
+    /// Each quad is oriented to the surface normal at the paint hit point.
+    /// No URP Decal Renderer Feature required.
     /// </summary>
     public class WorldDecalCanvas : MonoBehaviour
     {
@@ -22,14 +21,14 @@ namespace GliqeWorld.Tools
 
         // ── Inspector ────────────────────────────────────────────────────────────
 
-        [SerializeField] private DecalProjector decalPrefab;
         [SerializeField] private int maxDecals = DefaultPoolSize;
         [SerializeField] private CreativeStateManager creativeState;
 
         // ── Private ──────────────────────────────────────────────────────────────
 
-        private readonly Queue<DecalProjector> _pool = new();
-        private readonly List<DecalProjector> _active = new();
+        private static Mesh _quadMesh;
+        private readonly Queue<MeshRenderer> _pool = new();
+        private readonly List<MeshRenderer> _active = new();
 
         // ── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -43,31 +42,34 @@ namespace GliqeWorld.Tools
         // ── Public Methods ───────────────────────────────────────────────────────
 
         /// <summary>
-        /// Places a decal at the hit point oriented to the surface normal.
-        /// Returns the activated DecalProjector, or null if the pool is exhausted
-        /// and no recyclable decal is available.
+        /// Places a paint quad at the hit point, oriented to the surface normal.
         /// </summary>
-        public DecalProjector PlaceDecal(RaycastHit hit, Material decalMaterial, Vector2 size, float fadeFactor = 1f)
+        public void PlaceDecal(RaycastHit hit, Material decalMaterial, Vector2 size, float fadeFactor = 1f)
         {
-            DecalProjector projector = GetFromPool();
+            MeshRenderer renderer = GetFromPool();
+            Transform t = renderer.transform;
 
-            projector.transform.position = hit.point + hit.normal * 0.01f;
-            projector.transform.rotation = Quaternion.LookRotation(-hit.normal);
-            projector.size = new Vector3(size.x, size.y, 0.5f);
-            projector.material = decalMaterial;
-            projector.fadeFactor = fadeFactor;
-            projector.gameObject.SetActive(true);
+            t.position = hit.point + hit.normal * 0.005f;
 
-            _active.Add(projector);
+            // Avoid LookRotation singularity when normal is nearly vertical
+            Vector3 worldUp = Mathf.Abs(Vector3.Dot(hit.normal, Vector3.up)) > 0.99f
+                ? Vector3.forward
+                : Vector3.up;
+            t.rotation = Quaternion.LookRotation(hit.normal, worldUp);
+            t.localScale = new Vector3(size.x, size.y, 1f);
+
+            renderer.material = decalMaterial;
+            renderer.gameObject.SetActive(true);
+
+            _active.Add(renderer);
             creativeState?.AddCreativeAction(CreativeActionType.DecalPlaced);
-            return projector;
         }
 
-        /// <summary>Returns all active decals to the pool (e.g. on zone unload).</summary>
+        /// <summary>Returns all active quads to the pool (e.g. on zone unload).</summary>
         public void ClearAll()
         {
-            foreach (DecalProjector d in _active)
-                ReturnToPool(d);
+            foreach (MeshRenderer r in _active)
+                ReturnToPool(r);
             _active.Clear();
         }
 
@@ -75,37 +77,71 @@ namespace GliqeWorld.Tools
 
         private void PrewarmPool()
         {
-            if (decalPrefab == null) return;
-
             for (int i = 0; i < maxDecals; i++)
             {
-                DecalProjector d = Instantiate(decalPrefab, transform);
-                d.gameObject.SetActive(false);
-                _pool.Enqueue(d);
+                MeshRenderer r = CreatePoolItem();
+                r.gameObject.SetActive(false);
+                _pool.Enqueue(r);
             }
         }
 
-        private DecalProjector GetFromPool()
+        private MeshRenderer GetFromPool()
         {
             if (_pool.Count > 0)
                 return _pool.Dequeue();
 
-            // Recycle the oldest active decal
+            // Recycle the oldest active quad
             if (_active.Count > 0)
             {
-                DecalProjector oldest = _active[0];
+                MeshRenderer oldest = _active[0];
                 _active.RemoveAt(0);
                 return oldest;
             }
 
-            // Fallback: instantiate (should not happen with correct pool size)
-            return Instantiate(decalPrefab, transform);
+            // Fallback: create a new item (should not happen with correct pool size)
+            return CreatePoolItem();
         }
 
-        private void ReturnToPool(DecalProjector d)
+        private void ReturnToPool(MeshRenderer r)
         {
-            d.gameObject.SetActive(false);
-            _pool.Enqueue(d);
+            r.gameObject.SetActive(false);
+            _pool.Enqueue(r);
+        }
+
+        private MeshRenderer CreatePoolItem()
+        {
+            GameObject go = new GameObject("PaintQuad");
+            go.transform.SetParent(transform);
+            go.AddComponent<MeshFilter>().sharedMesh = GetQuadMesh();
+            return go.AddComponent<MeshRenderer>();
+        }
+
+        // ── Quad Mesh ─────────────────────────────────────────────────────────────
+
+        private static Mesh GetQuadMesh()
+        {
+            if (_quadMesh != null) return _quadMesh;
+
+            _quadMesh = new Mesh { name = "PaintQuad" };
+            _quadMesh.SetVertices(new[]
+            {
+                new Vector3(-0.5f, -0.5f, 0f),
+                new Vector3( 0.5f, -0.5f, 0f),
+                new Vector3( 0.5f,  0.5f, 0f),
+                new Vector3(-0.5f,  0.5f, 0f)
+            });
+            _quadMesh.SetTriangles(new[] { 0, 1, 2, 0, 2, 3 }, 0);
+            _quadMesh.SetNormals(new[]
+            {
+                Vector3.forward, Vector3.forward,
+                Vector3.forward, Vector3.forward
+            });
+            _quadMesh.SetUVs(0, new[]
+            {
+                new Vector2(0f, 0f), new Vector2(1f, 0f),
+                new Vector2(1f, 1f), new Vector2(0f, 1f)
+            });
+            return _quadMesh;
         }
     }
 }

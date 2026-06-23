@@ -5,13 +5,13 @@ using UnityEngine.InputSystem;
 namespace GliqeWorld.Player
 {
     /// <summary>
-    /// Thin wrapper over Unity's Input System. Reads and exposes all player input
-    /// as typed events and properties. Attach to the Player GameObject.
+    /// Thin wrapper over Unity's Input System. All inputs are polled each frame
+    /// via InputAction APIs to avoid SendMessages phase-firing inconsistencies.
     /// </summary>
     [RequireComponent(typeof(PlayerInput))]
     public class PlayerInputHandler : MonoBehaviour
     {
-        // ── Properties ──────────────────────────────────────────────────────────
+        // ── Properties ───────────────────────────────────────────────────────────
 
         /// <summary>Normalised WASD / left-stick movement.</summary>
         public Vector2 MoveInput { get; private set; }
@@ -24,49 +24,78 @@ namespace GliqeWorld.Player
         public bool PeekLeftHeld { get; private set; }
         public bool PeekRightHeld { get; private set; }
 
+        /// <summary>True while the left-hand use button is held (used by paint tools).</summary>
+        public bool LeftHandUseHeld { get; private set; }
+
+        /// <summary>True while the right-hand use button is held (used by paint tools).</summary>
+        public bool RightHandUseHeld { get; private set; }
+
         // ── Events ───────────────────────────────────────────────────────────────
 
         public event Action OnInteractPressed;
-        public event Action OnLeftHandUse;
-        public event Action OnRightHandUse;
+        public event Action OnToggleCameraViewPressed;
+
+        /// <summary>Fired on the frame the swap-hands button is pressed.</summary>
         public event Action OnSwapHands;
 
-        // ── Input action callbacks ────────────────────────────────────────────────
+        public event Action OnLeftHandUsePressed;
+        public event Action OnRightHandUsePressed;
 
-        public void OnMove(InputValue value) => MoveInput = value.Get<Vector2>();
+        // ── Private ──────────────────────────────────────────────────────────────
 
-        public void OnLook(InputValue value) => LookInput = value.Get<Vector2>();
+        private PlayerInput _playerInput;
+        private InputAction _move;
+        private InputAction _look;
+        private InputAction _sprint;
+        private InputAction _crouch;
+        private InputAction _peekLeft;
+        private InputAction _peekRight;
+        private InputAction _leftHandUse;
+        private InputAction _rightHandUse;
+        private InputAction _interact;
+        private InputAction _toggleCamera;
+        private InputAction _swapHands;
 
-        public void OnSprint(InputValue value) => SprintHeld = value.isPressed;
+        // ── Unity Lifecycle ──────────────────────────────────────────────────────
 
-        public void OnDuck(InputValue value) => DuckHeld = value.isPressed;
-
-        public void OnPeekLeft(InputValue value) => PeekLeftHeld = value.isPressed;
-
-        public void OnPeekRight(InputValue value) => PeekRightHeld = value.isPressed;
-
-        public void OnInteract(InputValue value)
+        private void Awake()
         {
-            if (value.isPressed)
-                OnInteractPressed?.Invoke();
+            _playerInput = GetComponent<PlayerInput>();
+            var a = _playerInput.actions;
+
+            _move         = a.FindAction("Move",             true);
+            _look         = a.FindAction("Look",             true);
+            _sprint       = a.FindAction("Sprint",           true);
+            _crouch       = a.FindAction("Crouch",           true);
+            _peekLeft     = a.FindAction("PeekLeft",         false);
+            _peekRight    = a.FindAction("PeekRight",        false);
+            _leftHandUse  = a.FindAction("LeftHandUse",      true);
+            _rightHandUse = a.FindAction("RightHandUse",     true);
+            _interact     = a.FindAction("Interact",         true);
+            _toggleCamera = a.FindAction("ToggleCameraView", true);
+            _swapHands    = a.FindAction("SwapHands",        true);
         }
 
-        public void OnLeftHandUseAction(InputValue value)
+        private void Update()
         {
-            if (value.isPressed)
-                OnLeftHandUse?.Invoke();
-        }
+            MoveInput = _move.ReadValue<Vector2>();
+            LookInput = _look.ReadValue<Vector2>();
 
-        public void OnRightHandUseAction(InputValue value)
-        {
-            if (value.isPressed)
-                OnRightHandUse?.Invoke();
-        }
+            SprintHeld       = _sprint.IsPressed();
+            DuckHeld         = _crouch.IsPressed();
+            LeftHandUseHeld  = _leftHandUse.IsPressed();
+            RightHandUseHeld = _rightHandUse.IsPressed();
 
-        public void OnSwapHandsAction(InputValue value)
-        {
-            if (value.isPressed)
-                OnSwapHands?.Invoke();
+            // Optional peek — absent on some input maps
+            PeekLeftHeld  = _peekLeft?.IsPressed()  ?? false;
+            PeekRightHeld = _peekRight?.IsPressed() ?? false;
+
+            // One-shot press events
+            if (_interact.WasPressedThisFrame())     OnInteractPressed?.Invoke();
+            if (_toggleCamera.WasPressedThisFrame()) OnToggleCameraViewPressed?.Invoke();
+            if (_swapHands.WasPressedThisFrame())    OnSwapHands?.Invoke();
+            if (_leftHandUse.WasPressedThisFrame())  OnLeftHandUsePressed?.Invoke();
+            if (_rightHandUse.WasPressedThisFrame()) OnRightHandUsePressed?.Invoke();
         }
     }
 }

@@ -208,6 +208,15 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": ""AxisDeadzone"",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleCameraView"",
+                    ""type"": ""Button"",
+                    ""id"": ""d2e78aa9-e880-4197-a1ed-5d2cf4a5a3f6"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -225,7 +234,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""up"",
                     ""id"": ""e2062cb9-1b15-46a2-838c-2f8d72a0bdd9"",
-                    ""path"": ""<Keyboard>/z"",
+                    ""path"": ""<Keyboard>/w"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -269,7 +278,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""left"",
                     ""id"": ""d2581a9b-1d11-4566-b27d-b92aff5fabbc"",
-                    ""path"": ""<Keyboard>/q"",
+                    ""path"": ""<Keyboard>/a"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -445,7 +454,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""7c87d8c5-6d9c-4d50-bb9a-9fcc782000f0"",
-                    ""path"": ""<Keyboard>/a"",
+                    ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -461,6 +470,17 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Peek"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2527c9c6-270b-4fcf-80c3-1585ca30d2ea"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleCameraView"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1061,6 +1081,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_RightHandUse = m_Player.FindAction("RightHandUse", throwIfNotFound: true);
         m_Player_SwapHands = m_Player.FindAction("SwapHands", throwIfNotFound: true);
         m_Player_Peek = m_Player.FindAction("Peek", throwIfNotFound: true);
+        m_Player_ToggleCameraView = m_Player.FindAction("ToggleCameraView", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1167,6 +1188,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_RightHandUse;
     private readonly InputAction m_Player_SwapHands;
     private readonly InputAction m_Player_Peek;
+    private readonly InputAction m_Player_ToggleCameraView;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1230,6 +1252,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Peek".
         /// </summary>
         public InputAction @Peek => m_Wrapper.m_Player_Peek;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ToggleCameraView".
+        /// </summary>
+        public InputAction @ToggleCameraView => m_Wrapper.m_Player_ToggleCameraView;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1295,6 +1321,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Peek.started += instance.OnPeek;
             @Peek.performed += instance.OnPeek;
             @Peek.canceled += instance.OnPeek;
+            @ToggleCameraView.started += instance.OnToggleCameraView;
+            @ToggleCameraView.performed += instance.OnToggleCameraView;
+            @ToggleCameraView.canceled += instance.OnToggleCameraView;
         }
 
         /// <summary>
@@ -1345,6 +1374,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Peek.started -= instance.OnPeek;
             @Peek.performed -= instance.OnPeek;
             @Peek.canceled -= instance.OnPeek;
+            @ToggleCameraView.started -= instance.OnToggleCameraView;
+            @ToggleCameraView.performed -= instance.OnToggleCameraView;
+            @ToggleCameraView.canceled -= instance.OnToggleCameraView;
         }
 
         /// <summary>
@@ -1736,6 +1768,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPeek(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleCameraView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleCameraView(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

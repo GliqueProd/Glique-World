@@ -1,11 +1,10 @@
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using GliqeWorld.Hands;
 
 namespace GliqeWorld.Tools
 {
     /// <summary>
-    /// First unlocked art tool. Wide stamp brush that places URP DecalProjectors
+    /// First unlocked art tool. Wide stamp brush that places paint quads
     /// on world surfaces via WorldDecalCanvas.
     /// </summary>
     public class MopMarkerTool : HandItem, IPaintTool

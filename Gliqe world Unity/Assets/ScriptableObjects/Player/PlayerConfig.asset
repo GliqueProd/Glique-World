@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dd1141601c0b5d459ff471a587dbbf1, type: 3}
   m_Name: PlayerConfig
   m_EditorClassIdentifier: Assembly-CSharp::GliqeWorld.Player.PlayerConfig
-  walkSpeed: 10
-  sprintSpeed: 13
+  walkSpeed: 8
+  sprintSpeed: 17
   duckSpeed: 2
   duckHeightMultiplier: 0.6
   peekAngle: 15
@@ -22,3 +22,9 @@ MonoBehaviour:
   gravity: -20
   mouseSensitivity: 0.36
   defaultFOV: 80
+  sprintFOV: 85
+  fovSmoothing: 8
+  tpsDistance: 4
+  tpsHeightOffset: 0.8
+  tpsCameraSmoothing: 8
+  tpsFOV: 65

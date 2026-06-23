@@ -11,6 +11,7 @@ TagManager:
   - Consumable
   - TigerCarp
   - BillboardNPC
+  - Paintable
   layers:
   - Default
   - TransparentFX

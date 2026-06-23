@@ -27,5 +27,15 @@ namespace GliqeWorld.Player
         [Header("Camera")]
         public float mouseSensitivity = 0.15f;
         public float defaultFOV = 75f;
+
+        [Header("FOV Kick")]
+        public float sprintFOV = 85f;
+        [Range(1f, 20f)] public float fovSmoothing = 8f;
+
+        [Header("TPS Camera")]
+        public float tpsDistance = 4f;
+        public float tpsHeightOffset = 0.8f;
+        [Range(1f, 20f)] public float tpsCameraSmoothing = 8f;
+        public float tpsFOV = 65f;
     }
 }
